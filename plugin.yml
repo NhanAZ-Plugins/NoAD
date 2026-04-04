@@ -1,0 +1,24 @@
+name: NoAD
+main: Vaivez66\NoAdvertisingPE\NoAdvertising
+version: 1.0.1
+api: 1.12.0
+load: POSTWORLD
+authors: [Vaivez66]
+
+description: "Chặn Những Hành Vi Cố Ý Quảng Cáo Máy Chủ Của Họ Ở Máy Chủ Của Bạn"
+
+commands:
+  na:
+    description: "Lệnh Chính"
+    usage: "§e/na <add|remove|list> [Tên Miền]"
+    
+permissions:
+  no.advertising.pe:
+    description: "Quyền Thực Hiện Lệnh"
+    default: op
+    
+  no.advertising.pe.bypass:
+    description: "Quyền Không Bị Ảnh Hưởng Bởi Plugin"
+    default: false
+    
+#Edit: Ghast Noob
