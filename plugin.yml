@@ -1,24 +1,24 @@
 name: NoAD
 main: Vaivez66\NoAdvertisingPE\NoAdvertising
-version: 1.0.1
-api: 1.12.0
+version: 2.0.0
+api: 5.0.0
 load: POSTWORLD
 authors: [Vaivez66]
-
-description: "Chặn Những Hành Vi Cố Ý Quảng Cáo Máy Chủ Của Họ Ở Máy Chủ Của Bạn"
+description: Filter configured server-advertising domains from chat, signs and selected commands.
 
 commands:
   na:
-    description: "Lệnh Chính"
-    usage: "§e/na <add|remove|list> [Tên Miền]"
+    description: Manage NoAD's blocked-domain list.
+    usage: "§e/na <add|remove|list> [domain]"
+    permission: "no.advertising.pe"
     
 permissions:
   no.advertising.pe:
-    description: "Quyền Thực Hiện Lệnh"
+    description: Allows managing NoAD's blocked-domain list.
     default: op
     
   no.advertising.pe.bypass:
-    description: "Quyền Không Bị Ảnh Hưởng Bởi Plugin"
+    description: Bypasses NoAD chat, sign and selected-command filters.
     default: false
     
 #Edit: Ghast Noob

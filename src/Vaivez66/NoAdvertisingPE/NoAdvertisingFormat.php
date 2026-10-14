@@ -1,39 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vaivez66\NoAdvertisingPE;
 
-use pocketmine\utils\TextFormat as TF;
+use pocketmine\utils\TextFormat;
 
-class NoAdvertisingFormat{
-
-    public function __construct(NoAdvertising $plugin){
-        $this->plugin = $plugin;
-    }
-
-    public function translate($m){
-        $m = str_replace("{BLACK}", TF::BLACK, $m);
-        $m = str_replace("{DARK_BLUE}", TF::DARK_BLUE, $m);
-        $m = str_replace("{DARK_GREEN}", TF::DARK_GREEN, $m);
-        $m = str_replace("{DARK_AQUA}", TF::DARK_AQUA, $m);
-        $m = str_replace("{DARK_RED}", TF::DARK_RED, $m);
-        $m = str_replace("{DARK_GRAY}", TF::DARK_GRAY, $m);
-        $m = str_replace("{DARK_PURPLE}", TF::DARK_PURPLE, $m);
-        $m = str_replace("{LIGHT_PURPLE}", TF::LIGHT_PURPLE, $m);
-        $m = str_replace("{GRAY}", TF::GRAY, $m);
-        $m = str_replace("{GOLD}", TF::GOLD, $m);
-        $m = str_replace("{BLUE}", TF::BLUE, $m);
-        $m = str_replace("{GREEN}", TF::GREEN, $m);
-        $m = str_replace("{AQUA}", TF::AQUA, $m);
-        $m = str_replace("{RED}", TF::RED, $m);
-        $m = str_replace("{YELLOW}", TF::YELLOW, $m);
-        $m = str_replace("{WHITE}", TF::WHITE, $m);
-        $m = str_replace("{OBFUSCATED}", TF::OBFUSCATED, $m);
-        $m = str_replace("{BOLD}", TF::BOLD, $m);
-        $m = str_replace("{STRIKETHROUGH}", TF::STRIKETHROUGH, $m);
-        $m = str_replace("{UNDERLINE}", TF::UNDERLINE, $m);
-        $m = str_replace("{ITALIC}", TF::ITALIC, $m);
-        $m = str_replace("{RESET}", TF::RESET, $m);
-        return $m;
-    }
-
+final class NoAdvertisingFormat{
+	public function translate(string $message) : string{
+		$colors = [
+			"{BLACK}" => TextFormat::BLACK,
+			"{DARK_BLUE}" => TextFormat::DARK_BLUE,
+			"{DARK_GREEN}" => TextFormat::DARK_GREEN,
+			"{DARK_AQUA}" => TextFormat::DARK_AQUA,
+			"{DARK_RED}" => TextFormat::DARK_RED,
+			"{DARK_GRAY}" => TextFormat::DARK_GRAY,
+			"{DARK_PURPLE}" => TextFormat::DARK_PURPLE,
+			"{LIGHT_PURPLE}" => TextFormat::LIGHT_PURPLE,
+			"{GRAY}" => TextFormat::GRAY,
+			"{GOLD}" => TextFormat::GOLD,
+			"{BLUE}" => TextFormat::BLUE,
+			"{GREEN}" => TextFormat::GREEN,
+			"{AQUA}" => TextFormat::AQUA,
+			"{RED}" => TextFormat::RED,
+			"{YELLOW}" => TextFormat::YELLOW,
+			"{WHITE}" => TextFormat::WHITE,
+			"{OBFUSCATED}" => TextFormat::OBFUSCATED,
+			"{BOLD}" => TextFormat::BOLD,
+			"{STRIKETHROUGH}" => TextFormat::STRIKETHROUGH,
+			"{UNDERLINE}" => TextFormat::UNDERLINE,
+			"{ITALIC}" => TextFormat::ITALIC,
+			"{RESET}" => TextFormat::RESET
+		];
+		return strtr($message, $colors);
+	}
 }

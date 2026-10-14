@@ -1,107 +1,171 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vaivez66\NoAdvertisingPE;
 
-use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
-use pocketmine\Player;
-use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\CommandExecutor;
-use pocketmine\Server;
+use pocketmine\command\PluginCommand;
+use pocketmine\event\Listener;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
-use pocketmine\utils\TextFormat as TF;
 
-class NoAdvertising extends PluginBase implements Listener{
+final class NoAdvertising extends PluginBase implements Listener{
+	private Config $cfg;
+	private NoAdvertisingFormat $format;
 
-    public $cfg;
-    private $format;
-
-    public function onEnable(){
+	protected function onEnable() : void{
 		$this->saveDefaultConfig();
-		$this->format = new NoAdvertisingFormat($this);
-		$this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML, array());
-		$this->getServer()->getLogger()->info("§aNoAD Đã Hoạt Động!");
+		$this->cfg = $this->getConfig();
+		$this->format = new NoAdvertisingFormat();
+
+		foreach(array_merge($this->getDomain(), $this->getAllowedDomain()) as $rule){
+			if(DomainMatcher::normalizeRule($rule) === null){
+				$this->getLogger()->warning("Ignoring invalid configured domain rule: " . $rule);
+			}
+		}
+
+		$command = $this->getCommand("na");
+		if(!$command instanceof PluginCommand){
+			$this->getLogger()->critical("The /na command is missing from plugin.yml; disabling NoAD.");
+			$this->getServer()->getPluginManager()->disablePlugin($this);
+			return;
+		}
+		$command->setExecutor(new NoAdvertisingCommand($this));
 		$this->getServer()->getPluginManager()->registerEvents(new NoAdvertisingListener($this), $this);
-		$this->getCommand("na")->setExecutor(new NoAdvertisingCommand($this));
-    }
-    
-    public function getDomain(){
-		$domain = (array) $this->cfg->get("domain");
-		return $domain;
-    }
-    
-    public function getAllowedDomain(){
-		$allowed = (array) $this->cfg->get("allowed.domain");
-		return $allowed;
-    }
-    
-    public function getType(){
-		return $this->cfg->get("type");
-    }
-
-    public function getMsg(){
-		return $this->cfg->get("message");
-    }
-
-	public function detectSign(){
-		return $this->cfg->get('detect.sign') === true;
+		$this->getLogger()->info("NoAD is enabled.");
 	}
 
-	public function getSignLines(){
-		return (array) $this->cfg->get('lines');
+	protected function onDisable() : void{
+		$this->getLogger()->info("NoAD is disabled.");
 	}
 
-	public function getBlockedCmd(){
-		return (array) $this->cfg->get('blocked.cmd');
+	/** @return list<string> */
+	public function getDomain() : array{
+		return $this->getStringList("domain");
 	}
 
-    public function addDomain($p, $name){
-		$domain = $this->getDomain();
-		if(in_array($name, $domain)){
-	    	$p->sendMessage("§cTên Miền Đã Tồn Tại!");
-	    	return false;
+	/** @return list<string> */
+	public function getAllowedDomain() : array{
+		return $this->getStringList("allowed.domain");
+	}
+
+	public function getType() : string{
+		$type = $this->cfg->get("type", "block");
+		return is_string($type) && in_array(strtolower($type), ["broadcast", "block", "kick"], true) ? strtolower($type) : "block";
+	}
+
+	public function getMsg() : string{
+		$message = $this->cfg->get("message", "§cAdvertising is not allowed.");
+		return is_string($message) ? $message : "§cAdvertising is not allowed.";
+	}
+
+	public function detectSign() : bool{
+		return $this->cfg->get("detect.sign", false) === true;
+	}
+
+	/** @return list<string> */
+	public function getSignLines() : array{
+		$lines = $this->getStringList("lines");
+		if(count($lines) !== 4){
+			return ["§c=============", "§cAdvertising is not allowed.", "§c=============", ""];
 		}
-		$domain[] = $name;
-		$this->cfg->set("domain", $domain);
+		return $lines;
+	}
+
+	/** @return list<string> */
+	public function getBlockedCmd() : array{
+		$commands = [];
+		foreach($this->getStringList("blocked.cmd") as $command){
+			$command = strtolower(ltrim(trim($command), "/"));
+			if($command !== ""){
+				$commands[$command] = $command;
+			}
+		}
+		return array_values($commands);
+	}
+
+	public function findBlockedHost(string $text) : ?string{
+		return DomainMatcher::findBlockedHost($text, $this->getValidRules("domain"), $this->getValidRules("allowed.domain"));
+	}
+
+	public function formatMessage(string $playerName) : string{
+		return $this->format->translate(str_replace("{player}", $playerName, $this->getMsg()));
+	}
+
+	public function addDomain(CommandSender $sender, string $name) : bool{
+		$normalized = DomainMatcher::normalizeRule($name);
+		if($normalized === null){
+			$sender->sendMessage("§cTên miền không hợp lệ. Hãy nhập tên miền như example.com hoặc hậu tố như .com.");
+			return false;
+		}
+
+		$current = $this->getDomain();
+		foreach($current as $domain){
+			if(DomainMatcher::normalizeRule($domain) === $normalized){
+				$sender->sendMessage("§cTên Miền Đã Tồn Tại!");
+				return false;
+			}
+		}
+		$current[] = $normalized;
+		$this->cfg->set("domain", $current);
 		$this->cfg->save();
-		$p->sendMessage("§aĐã Thêm Thành Công " . $name . " Vào Cấu Hình!");
+		$sender->sendMessage("§aĐã Thêm Thành Công " . $normalized . " Vào Cấu Hình!");
 		return true;
-    }
+	}
 
-    public function removeDomain($p, $name){
-    	$domain = $this->getDomain();
-    	$key = array_search($name, $domain);
-    	if($key === false){
-    	    $p->sendMessage("§cTên Miền Không Tồn Tại!");
-    	    return false;
-    	}
-    	unset($domain[$key]);
-    	$this->cfg->set("domain", array_values($domain));
-    	$this->cfg->save();
-    	$p->sendMessage("§aĐã Xóa Thành Công " . $name . " Khỏi Cấu Hình!");
-    	return true;
-    }
-
-    public function listDomain($p){
-		$domain = implode("\n§e- ", $this->getDomain());
-		$p->sendMessage("§eCác Tên Miền Bị Chặn:");
-		$p->sendMessage("§e- " . $domain);
-		return true;
-    }
-
-    public function broadcastMsg($m){
-		foreach($this->getServer()->getOnlinePlayers() as $p){
-	    	$p->sendMessage($m);
+	public function removeDomain(CommandSender $sender, string $name) : bool{
+		$normalized = DomainMatcher::normalizeRule($name);
+		if($normalized === null){
+			$sender->sendMessage("§cTên miền không hợp lệ.");
+			return false;
 		}
-    }
 
-    public function getFormat(){
-		return $this->format;
-    }
-	
-    public function onDisable(){
-		$this->getServer()->getLogger()->info("§cNoAD Đã Ngừng Hoạt Động!");
-    }
+		$current = $this->getDomain();
+		foreach($current as $key => $domain){
+			if(DomainMatcher::normalizeRule($domain) === $normalized){
+				unset($current[$key]);
+				$this->cfg->set("domain", array_values($current));
+				$this->cfg->save();
+				$sender->sendMessage("§aĐã Xóa Thành Công " . $normalized . " Khỏi Cấu Hình!");
+				return true;
+			}
+		}
+		$sender->sendMessage("§cTên Miền Không Tồn Tại!");
+		return false;
+	}
 
+	public function listDomain(CommandSender $sender) : bool{
+		$domains = $this->getDomain();
+		$sender->sendMessage("§eCác Tên Miền Bị Chặn:");
+		$sender->sendMessage($domains === [] ? "§e- (chưa có)" : "§e- " . implode("\n§e- ", $domains));
+		return true;
+	}
+
+	public function broadcastMsg(string $message) : void{
+		foreach($this->getServer()->getOnlinePlayers() as $player){
+			$player->sendMessage($message);
+		}
+	}
+
+	/** @return list<string> */
+	private function getStringList(string $key) : array{
+		$value = $this->cfg->get($key, []);
+		if(!is_array($value)){
+			return [];
+		}
+		return array_values(array_filter($value, static fn(mixed $entry) : bool => is_string($entry)));
+	}
+
+	/** @return list<string> */
+	private function getValidRules(string $key) : array{
+		$rules = [];
+		foreach($this->getStringList($key) as $rule){
+			$normalized = DomainMatcher::normalizeRule($rule);
+			if($normalized !== null){
+				$rules[] = $normalized;
+			}
+		}
+		return $rules;
+	}
 }

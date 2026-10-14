@@ -1,35 +1,35 @@
-# Các Loại Có Sẵn:
+# Chat moderation actions:
 #   - broadcast
 #   - block
 #   - kick
 type: block
-#Khuyên Dùng: Block
+# block keeps the message private and informs the sender.
 
 # Tin Nhắn Sẽ Gửi:
 # Bạn Có Thể Sử Dụng {player} Để Đề Cập Đến Tên Cua Họ
 message: '§cVui Lòng Không Quảng Cáo!'
 
-# Tên Miền Bị Chặn
+# Blocked host rules. A leading dot matches a host suffix (for example, .com).
 domain:
   - ".me"
   - ".com"
   - ".net"
   
-# Các Miền Được Phép Sử Dụng:
+# Allowed hosts and their subdomains. This does not allow other blocked hosts
+# that happen to appear in the same message.
 allowed.domain:
   - "minesao.sytes.net"
   
-# Bật true Để Chặng Hành Vi Quảng Cáo Bằng Bảng Hiệu(Sign)
+# Enable sign filtering.
 detect.sign: true
-#Khuyên Dùng: true
 
-# Các Dòng Sẽ Thay Đổi Như Sau Nếu Người Chơi Quảng Cáo Trên Bảng Hiệu:
+# Sign text that replaces all four lines if a blocked host is detected.
 lines:
   - '§c============='
   - '§cVui Lòng Không Quảng Cáo!'
   - '§c============='
   - ''
-# Sẽ Cấm Quảng Cáo Bằng Các Lệnh Sau:
+# Filter blocked host text in the arguments of these selected commands.
 blocked.cmd:
   - "/me"
   - "/tell"

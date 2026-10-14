@@ -1,104 +1,86 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vaivez66\NoAdvertisingPE;
 
-use pocketmine\Server;
-use pocketmine\plugin\PluginBase;
+use pocketmine\block\utils\SignText;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\block\SignChangeEvent;
-use pocketmine\utils\TextFormat as TF;
+use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\server\CommandEvent;
+use pocketmine\player\Player;
 
-class NoAdvertisingListener extends PluginBase implements Listener{
+final class NoAdvertisingListener implements Listener{
+	public function __construct(private NoAdvertising $plugin){}
 
-    public function __construct(NoAdvertising $plugin){
-        $this->plugin = $plugin;
-    }
+	public function onChat(PlayerChatEvent $event) : void{
+		if($event->isCancelled()){
+			return;
+		}
+		$player = $event->getPlayer();
+		if($player->hasPermission("no.advertising.pe.bypass")){
+			return;
+		}
 
-    public function onChat(PlayerChatEvent $event){
-        $p = $event->getPlayer();
-        $msg = $event->getMessage();
-        $domain = $this->plugin->getDomain();
-        $allowed = $this->plugin->getAllowedDomain();
-        $type = $this->plugin->getType();
-        $m = $this->plugin->getMsg();
-        $m = str_replace("{player}", $p->getName(), $m);
-        $m = $this->plugin->getFormat()->translate($m);
-        if($p->hasPermission('no.advertising.pe.bypass')){
-            return;
-        }
-        foreach($allowed as $a){
-            if((preg_match("/^{$a}/i", $msg)) || (stripos($msg, $a) == true)){
-                return;
-            }
-        }
-        foreach($domain as $d){
-            if((preg_match("/^{$d}/i", $msg)) || (stripos($msg, $d) == true)){
-                switch($type){
-                    case "broadcast":
-                        $event->setCancelled(true);
-                        $this->plugin->broadcastMsg($m);
-                        break;
-                    case "block":
-                        $event->setCancelled(true);
-                        $p->sendMessage($m);
-                        break;
-                    case "kick":
-                        $event->setCancelled(true);
-                        $p->kick($m, true);
-                }
-            }
-        }
-    }
+		if($this->plugin->findBlockedHost($event->getMessage()) === null){
+			return;
+		}
+		$event->cancel();
+		$this->applyChatAction($player);
+	}
 
-    public function onSign(SignChangeEvent $event){
-        if($this->plugin->detectSign()){
-            $lines = $event->getLines();
-            $p = $event->getPlayer();
-            $sign = $this->plugin->getSignLines();
-            if($p->hasPermission('no.advertising.pe.bypass')){
-                return;
-            }
-            foreach($lines as $line){
-                foreach($this->plugin->getAllowedDomain() as $a){
-                    if((preg_match("/^{$a}/i", $line)) || (stripos($line, $a) == true)){
-                        return;
-                    }
-                }
-                foreach($this->plugin->getDomain() as $d){
-                    if((preg_match("/^{$d}/i", $line)) || (stripos($line, $d) == true)) {
-                        for ($i = 0; $i <= 3; $i++) {
-                            $event->setLine($i, $sign[$i]);
-                        }
-                        $p->sendMessage('§cVui Lòng Không Quảng Cáo!');
-                    }
-                }
-            }
-        }
-    }
+	public function onSignChange(SignChangeEvent $event) : void{
+		if($event->isCancelled() || !$this->plugin->detectSign()){
+			return;
+		}
+		$player = $event->getPlayer();
+		if($player->hasPermission("no.advertising.pe.bypass")){
+			return;
+		}
 
-    public function onCmd(PlayerCommandPreprocessEvent $event){
-        $msg = explode(' ', $event->getMessage());
-        $cmd = array_shift($msg);
-        $p = $event->getPlayer();
-        $m = implode(' ', $msg);
-        if ($p->hasPermission('no.advertising.pe.bypass')) {
-            return;
-        }
-        foreach ($this->plugin->getAllowedDomain() as $a) {
-            if ((preg_match("/^{$a}/i", $m)) || (stripos($m, $a) == true)) {
-                return;
-            }
-        }
-        if(in_array($cmd, $this->plugin->getBlockedCmd())) {
-            foreach ($this->plugin->getDomain() as $d) {
-                if ((preg_match("/^{$d}/i", $m)) || (stripos($m, $d) == true)) {
-                    $event->setCancelled(true);
-                    $p->sendMessage('§cVui Lòng Không Quảng Cáo!');
-                }
-            }
-        }
-    }
+		$text = $event->getNewText();
+		foreach($text->getLines() as $line){
+			if($this->plugin->findBlockedHost($line) !== null){
+				$event->setNewText(new SignText($this->plugin->getSignLines(), $text->getBaseColor(), $text->isGlowing()));
+				$player->sendMessage("§cVui Lòng Không Quảng Cáo!");
+				return;
+			}
+		}
+	}
 
+	public function onCommand(CommandEvent $event) : void{
+		$sender = $event->getSender();
+		if(!$sender instanceof Player || $event->isCancelled() || $sender->hasPermission("no.advertising.pe.bypass")){
+			return;
+		}
+
+		$parts = preg_split('/\s+/', trim($event->getCommand()), 2);
+		if(!is_array($parts) || $parts === []){
+			return;
+		}
+		$command = strtolower(ltrim($parts[0], "/"));
+		if(!in_array($command, $this->plugin->getBlockedCmd(), true)){
+			return;
+		}
+		$arguments = $parts[1] ?? "";
+		if($this->plugin->findBlockedHost($arguments) !== null){
+			$event->cancel();
+			$sender->sendMessage("§cVui Lòng Không Quảng Cáo!");
+		}
+	}
+
+	private function applyChatAction(Player $player) : void{
+		$message = $this->plugin->formatMessage($player->getName());
+		switch($this->plugin->getType()){
+			case "broadcast":
+				$this->plugin->broadcastMsg($message);
+				return;
+			case "kick":
+				$player->kick($message);
+				return;
+			default:
+				$player->sendMessage($message);
+		}
+	}
 }
