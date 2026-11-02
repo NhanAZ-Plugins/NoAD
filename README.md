@@ -4,7 +4,7 @@ NoAD filters configured server-advertising domains from player chat, sign text a
 
 ## Requirements
 
-- Axolotl-PM API 5.0.0 is the declared minimum. CI checks API 5.0.0 and 5.49.1; it does not verify every intervening or future server revision.
+- Axolotl-PM API 5.0.0 is the declared minimum. CI checks API 5.0.0 and 5.51.1; it does not verify every intervening or future server revision.
 
 ## Commands
 
@@ -26,7 +26,7 @@ Axolotl-PM 5 removed the old player-command preprocess event. The API 5 port use
 
 ## Build and checks
 
-GitHub Actions uses the pinned [DevTools](https://github.com/NhanAZ/DevTools) reusable build workflow. It checks PHP syntax, domain-matching fixtures, PHPStan at maximum level against pinned API revisions, PHAR validation, and startup on an isolated Axolotl-PM 5.49.1 server.
+GitHub Actions uses the pinned [DevTools](https://github.com/NhanAZ/DevTools) reusable build workflow. It checks PHP syntax, domain-matching fixtures, PHPStan at maximum level against pinned API revisions, PHAR validation, and startup on an isolated Axolotl-PM 5.51.1 server.
 
 ## Provenance
 
