@@ -3,7 +3,7 @@ main: Vaivez66\NoAdvertisingPE\NoAdvertising
 version: 2.0.0
 api: 5.0.0
 load: POSTWORLD
-authors: [Vaivez66]
+authors: ["NhanAZ", "Vaivez66"]
 description: Filter configured server-advertising domains from chat, signs and selected commands.
 
 commands:
