@@ -36,3 +36,8 @@ GitHub Actions uses the pinned [DevTools](https://github.com/NhanAZ/DevTools) re
 ## Provenance
 
 The repository has no LICENSE file or documented grant for distributing a modified build. This migration does not claim a license or publish a stable release. Do not redistribute a PHAR until rights are verified.
+
+
+## Credits
+
+Authors: NhanAZ, Vaivez66.
