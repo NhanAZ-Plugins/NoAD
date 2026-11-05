@@ -43,7 +43,7 @@ final class NoAdvertisingListener implements Listener{
 		foreach($text->getLines() as $line){
 			if($this->plugin->findBlockedHost($line) !== null){
 				$event->setNewText(new SignText($this->plugin->getSignLines(), $text->getBaseColor(), $text->isGlowing()));
-				$player->sendMessage("§cVui Lòng Không Quảng Cáo!");
+				$player->sendMessage("§cAdvertising is not allowed.");
 				return;
 			}
 		}
@@ -66,7 +66,7 @@ final class NoAdvertisingListener implements Listener{
 		$arguments = $parts[1] ?? "";
 		if($this->plugin->findBlockedHost($arguments) !== null){
 			$event->cancel();
-			$sender->sendMessage("§cVui Lòng Không Quảng Cáo!");
+			$sender->sendMessage("§cAdvertising is not allowed.");
 		}
 	}
 

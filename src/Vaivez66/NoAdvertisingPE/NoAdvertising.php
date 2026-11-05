@@ -68,7 +68,7 @@ final class NoAdvertising extends PluginBase implements Listener{
 	public function getSignLines() : array{
 		$lines = $this->getStringList("lines");
 		if(count($lines) !== 4){
-			return ["§c=============", "§cAdvertising is not allowed.", "§c=============", ""];
+			return ["", "§cAdvertising is not allowed.", "", ""];
 		}
 		return $lines;
 	}
@@ -96,28 +96,28 @@ final class NoAdvertising extends PluginBase implements Listener{
 	public function addDomain(CommandSender $sender, string $name) : bool{
 		$normalized = DomainMatcher::normalizeRule($name);
 		if($normalized === null){
-			$sender->sendMessage("§cTên miền không hợp lệ. Hãy nhập tên miền như example.com hoặc hậu tố như .com.");
+			$sender->sendMessage("§cInvalid domain rule. Use a host such as example.com or a suffix such as .com.");
 			return false;
 		}
 
 		$current = $this->getDomain();
 		foreach($current as $domain){
 			if(DomainMatcher::normalizeRule($domain) === $normalized){
-				$sender->sendMessage("§cTên Miền Đã Tồn Tại!");
+				$sender->sendMessage("§cThat domain rule already exists.");
 				return false;
 			}
 		}
 		$current[] = $normalized;
 		$this->cfg->set("domain", $current);
 		$this->cfg->save();
-		$sender->sendMessage("§aĐã Thêm Thành Công " . $normalized . " Vào Cấu Hình!");
+		$sender->sendMessage("§aAdded " . $normalized . " to the blocked domain list.");
 		return true;
 	}
 
 	public function removeDomain(CommandSender $sender, string $name) : bool{
 		$normalized = DomainMatcher::normalizeRule($name);
 		if($normalized === null){
-			$sender->sendMessage("§cTên miền không hợp lệ.");
+			$sender->sendMessage("§cInvalid domain rule.");
 			return false;
 		}
 
@@ -127,18 +127,18 @@ final class NoAdvertising extends PluginBase implements Listener{
 				unset($current[$key]);
 				$this->cfg->set("domain", array_values($current));
 				$this->cfg->save();
-				$sender->sendMessage("§aĐã Xóa Thành Công " . $normalized . " Khỏi Cấu Hình!");
+				$sender->sendMessage("§aRemoved " . $normalized . " from the blocked domain list.");
 				return true;
 			}
 		}
-		$sender->sendMessage("§cTên Miền Không Tồn Tại!");
+		$sender->sendMessage("§cThat domain rule does not exist.");
 		return false;
 	}
 
 	public function listDomain(CommandSender $sender) : bool{
 		$domains = $this->getDomain();
-		$sender->sendMessage("§eCác Tên Miền Bị Chặn:");
-		$sender->sendMessage($domains === [] ? "§e- (chưa có)" : "§e- " . implode("\n§e- ", $domains));
+		$sender->sendMessage("§eBlocked domain rules:");
+		$sender->sendMessage($domains === [] ? "§e- (none)" : "§e- " . implode("\n§e- ", $domains));
 		return true;
 	}
 

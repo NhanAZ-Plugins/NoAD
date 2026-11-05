@@ -9,16 +9,14 @@ description: Filter configured server-advertising domains from chat, signs and s
 commands:
   na:
     description: Manage NoAD's blocked-domain list.
-    usage: "§e/na <add|remove|list> [domain]"
+    usage: "/na <add|remove|list> [domain]"
     permission: "no.advertising.pe"
-    
+
 permissions:
   no.advertising.pe:
     description: Allows managing NoAD's blocked-domain list.
     default: op
-    
+
   no.advertising.pe.bypass:
     description: Bypasses NoAD chat, sign and selected-command filters.
     default: false
-    
-#Edit: Ghast Noob

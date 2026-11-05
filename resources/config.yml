@@ -5,9 +5,8 @@
 type: block
 # block keeps the message private and informs the sender.
 
-# Tin Nhắn Sẽ Gửi:
-# Bạn Có Thể Sử Dụng {player} Để Đề Cập Đến Tên Cua Họ
-message: '§cVui Lòng Không Quảng Cáo!'
+# Message sent when a blocked host is detected. {player} is replaced with the sender name.
+message: '§cAdvertising is not allowed.'
 
 # Blocked host rules. A leading dot matches a host suffix (for example, .com).
 domain:
@@ -25,9 +24,9 @@ detect.sign: true
 
 # Sign text that replaces all four lines if a blocked host is detected.
 lines:
-  - '§c============='
-  - '§cVui Lòng Không Quảng Cáo!'
-  - '§c============='
+  - ''
+  - '§cAdvertising is not allowed.'
+  - ''
   - ''
 # Filter blocked host text in the arguments of these selected commands.
 blocked.cmd:

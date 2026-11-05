@@ -16,7 +16,7 @@ final class NoAdvertisingCommand implements CommandExecutor{
 			return false;
 		}
 		if(!$sender->hasPermission("no.advertising.pe")){
-			$sender->sendMessage("Bạn Không Có Thẩm Quyền!");
+			$sender->sendMessage("§cYou do not have permission to manage blocked domains.");
 			return true;
 		}
 		if(count($args) === 1 && strtolower($args[0]) === "list"){
